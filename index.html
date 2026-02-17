@@ -3,84 +3,125 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>LGM — la gentillesse méritée</title>
 
 <style>
 
 body{
 margin:0;
-font-family:Arial, sans-serif;
+font-family:Helvetica,Arial,sans-serif;
 background:black;
 color:white;
 }
+
+/* HEADER */
 
 header{
 display:flex;
 justify-content:space-between;
 align-items:center;
-padding:20px 30px;
-border-bottom:1px solid #222;
+padding:22px 30px;
+border-bottom:1px solid #111;
+position:sticky;
+top:0;
+background:black;
+z-index:10;
 }
 
 .logo{
 font-size:22px;
-letter-spacing:2px;
+letter-spacing:3px;
+font-weight:700;
 }
 
-nav a{
-color:white;
-margin-left:20px;
-text-decoration:none;
-font-size:14px;
-}
+/* FILTERS */
 
-.hero{
-height:80vh;
+.filters{
 display:flex;
-flex-direction:column;
 justify-content:center;
-align-items:center;
-text-align:center;
+gap:10px;
+padding:18px;
 }
 
-.hero h1{
-font-size:42px;
-margin:0;
-}
-
-.btn{
-margin-top:20px;
-padding:14px 30px;
-border:1px solid white;
+.filter-btn{
+background:none;
+border:1px solid #333;
 color:white;
-text-decoration:none;
-transition:0.3s;
+padding:9px 18px;
+font-size:12px;
+cursor:pointer;
+transition:0.25s;
 }
 
-.btn:hover{
+.filter-btn:hover,
+.filter-btn.active{
 background:white;
 color:black;
+border-color:white;
 }
+
+/* PRODUCTS */
 
 .products{
 display:grid;
 grid-template-columns:1fr 1fr;
-gap:10px;
-padding:20px;
+gap:14px;
+padding:14px;
+}
+
+@media(min-width:900px){
+.products{grid-template-columns:repeat(4,1fr);}
 }
 
 .card{
-background:#111;
-padding:20px;
-text-align:center;
+border:1px solid #111;
+transition:0.35s;
+cursor:pointer;
 }
 
+.card:hover{
+transform:translateY(-4px);
+border-color:#333;
+}
+
+.card img{
+width:100%;
+aspect-ratio:4/5;
+object-fit:cover;
+display:block;
+background:#111;
+}
+
+.product-name{
+font-size:13px;
+letter-spacing:1px;
+text-transform:uppercase;
+margin:10px;
+}
+
+.product-price{
+font-size:13px;
+margin:0 10px 14px;
+color:#aaa;
+}
+
+/* FOOTER */
+
 footer{
-padding:30px;
+padding:35px;
 text-align:center;
-border-top:1px solid #222;
+border-top:1px solid #111;
 margin-top:40px;
 font-size:12px;
+color:#666;
+}
+
+.loader{
+text-align:center;
+grid-column:1/-1;
+padding:40px;
+opacity:.6;
 }
 
 </style>
@@ -90,35 +131,102 @@ font-size:12px;
 
 <header>
 <div class="logo">LGM</div>
-<nav>
-<a href="#">SHOP</a>
-<a href="#">ABOUT</a>
-<a href="#">CONTACT</a>
-</nav>
+<div style="font-size:11px;opacity:.4;">STUDIO</div>
 </header>
 
-<section class="hero">
-<h1>la gentillesse méritée</h1>
-<a href="#" class="btn">SHOP NOW</a>
-</section>
-
-<section class="products">
-
-<div class="card">
-<p>JEANS STARBOY</p>
-<p>₴1900</p>
+<div class="filters">
+<button class="filter-btn active" onclick="filterData('all')">ALL</button>
+<button class="filter-btn" onclick="filterData('jeans')">JEANS</button>
+<button class="filter-btn" onclick="filterData('hoodies')">HOODIES</button>
 </div>
 
-<div class="card">
-<p>COMING SOON</p>
-<p>—</p>
-</div>
-
+<section class="products" id="product-container">
+<div class="loader">Завантаження товарів...</div>
 </section>
 
 <footer>
-© LGM brand
+© LGM brand — la gentillesse méritée
 </footer>
+
+<script>
+
+const csvUrl="https://docs.google.com/spreadsheets/d/1-7vzk0PnrJcB88qVycN6OL1c2m1lFUs7FLlSf2tsNWQ/gviz/tq?tqx=out:csv";
+
+let allProducts=[];
+
+async function fetchData(){
+
+try{
+
+const res=await fetch(csvUrl);
+const text=await res.text();
+
+const rows=text.split("\n").slice(1);
+
+allProducts=rows.map(r=>{
+
+const c=r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+
+return{
+name:c[0]?.replace(/"/g,''),
+price:c[1]?.replace(/"/g,''),
+image:c[2]?.replace(/"/g,''),
+category:c[3]?.replace(/"/g,'').trim().toLowerCase()
+};
+
+}).filter(p=>p.name);
+
+renderProducts(allProducts);
+
+}catch(e){
+
+document.getElementById("product-container").innerHTML=
+'<div class="loader">Помилка завантаження таблиці</div>';
+
+}
+
+}
+
+function renderProducts(list){
+
+const container=document.getElementById("product-container");
+
+if(!list.length){
+container.innerHTML='<div class="loader">Товарів немає</div>';
+return;
+}
+
+container.innerHTML=list.map(p=>`
+
+<div class="card" onclick="alert('Тут буде сторінка товару')">
+
+<img src="${p.image}" onerror="this.src='https://via.placeholder.com/600x750?text=LGM'">
+
+<div class="product-name">${p.name}</div>
+
+<div class="product-price">${p.price}</div>
+
+</div>
+
+`).join("");
+
+}
+
+function filterData(cat){
+
+document.querySelectorAll(".filter-btn").forEach(b=>{
+b.classList.remove("active");
+if(b.innerText.toLowerCase()==cat)b.classList.add("active");
+});
+
+if(cat==="all")renderProducts(allProducts);
+else renderProducts(allProducts.filter(p=>p.category===cat));
+
+}
+
+fetchData();
+
+</script>
 
 </body>
 </html>
