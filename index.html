@@ -1,102 +1,58 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LGM — la gentillesse méritée</title>
-<style>
-body{margin:0;font-family:Helvetica,Arial,sans-serif;background:black;color:white;}
-header{display:flex;justify-content:space-between;align-items:center;padding:22px 30px;border-bottom:1px solid #111;position:sticky;top:0;background:black;z-index:10;}
-.logo{font-size:22px;letter-spacing:3px;font-weight:700;}
-.filters{display:flex;justify-content:center;gap:10px;padding:18px;}
-.filter-btn{background:none;border:1px solid #333;color:white;padding:9px 18px;font-size:12px;cursor:pointer;transition:0.25s;}
-.filter-btn:hover, .filter-btn.active{background:white;color:black;border-color:white;}
-.products{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:14px;}
-@media(min-width:900px){.products{grid-template-columns:repeat(4,1fr);}}
-.card{border:1px solid #111;transition:0.35s;cursor:pointer;}
-.card:hover{transform:translateY(-4px);border-color:#333;}
-.card img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block;background:#111;}
-.product-name{font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:10px;}
-.product-price{font-size:13px;margin:0 10px 14px;color:#aaa;}
-footer{padding:35px;text-align:center;border-top:1px solid #111;margin-top:40px;font-size:12px;color:#666;}
-.loader{text-align:center;grid-column:1/-1;padding:40px;opacity:.6;}
-</style>
-</head>
-<body>
-
-<header>
-<div class="logo">LGM</div>
-<div style="font-size:11px;opacity:.4;">STUDIO</div>
-</header>
-
-<div class="filters">
-<button class="filter-btn active" onclick="filterData('all')">ALL</button>
-<button class="filter-btn" onclick="filterData('jeans')">JEANS</button>
-<button class="filter-btn" onclick="filterData('hoodies')">HOODIES</button>
-</div>
-
-<section class="products" id="product-container">
-<div class="loader">Завантаження товарів...</div>
-</section>
-
-<footer>
-© LGM brand — la gentillesse méritée
-</footer>
-
 <script>
-// Додав параметр t до посилання, щоб браузер не брав стару версію з пам'яті
-const csvUrl="https://docs.google.com/spreadsheets/d/1-7vzk0PnrJcB88qVycN6OL1c2m1lFUs7FLlSf2tsNWQ/gviz/tq?tqx=out:csv&t=" + new Date().getTime();
+// Твоє ID таблиці
+const sheetId = "1-7vzk0PnrJcB88qVycN6OL1c2m1lFUs7FLlSf2tsNWQ";
+const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&t=${new Date().getTime()}`;
 
-let allProducts=[];
+let allProducts = [];
 
-async function fetchData(){
+async function fetchData() {
     try {
         const res = await fetch(csvUrl);
         const text = await res.text();
+        
+        // Розбиваємо текст на рядки і прибираємо лапки, які додає Google
         const rows = text.split("\n").slice(1);
 
         allProducts = rows.map(r => {
-            // Розбиваємо рядок CSV з урахуванням лапок
             const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
             return {
-                name: c[0]?.replace(/"/g,''),
-                price: c[1]?.replace(/"/g,''),
-                image: c[2]?.replace(/"/g,'').trim(),
-                category: c[3]?.replace(/"/g,'').trim().toLowerCase()
+                name: c[0] ? c[0].replace(/^"|"$/g, '') : '',
+                price: c[1] ? c[1].replace(/^"|"$/g, '') : '',
+                image: c[2] ? c[2].replace(/^"|"$/g, '').trim() : '',
+                category: c[3] ? c[3].replace(/^"|"$/g, '').trim().toLowerCase() : ''
             };
-        }).filter(p => p.name && p.name.trim() !== "");
+        }).filter(p => p.name && p.image); // Показуємо тільки якщо є ім'я і картинка
 
         renderProducts(allProducts);
-    } catch(e) {
-        document.getElementById("product-container").innerHTML = '<div class="loader">Помилка завантаження. Перевірте інтернет.</div>';
+    } catch (e) {
+        console.error("Помилка:", e);
+        document.getElementById("product-container").innerHTML = '<div class="loader">Помилка завантаження даних.</div>';
     }
 }
 
-function renderProducts(list){
+function renderProducts(list) {
     const container = document.getElementById("product-container");
-    if(!list.length){
-        container.innerHTML = '<div class="loader">Товарів немає</div>';
+    if (!list.length) {
+        container.innerHTML = '<div class="loader">Товарів не знайдено</div>';
         return;
     }
     container.innerHTML = list.map(p => `
         <div class="card" onclick="alert('Для замовлення пишіть в Direct')">
-            <img src="${p.image}" onerror="this.src='https://via.placeholder.com/600x750?text=LGM+IMAGE'">
+            <img src="${p.image}" alt="${p.name}">
             <div class="product-name">${p.name}</div>
             <div class="product-price">${p.price}</div>
         </div>
     `).join("");
 }
 
-function filterData(cat){
+function filterData(cat) {
     document.querySelectorAll(".filter-btn").forEach(b => {
         b.classList.remove("active");
         if(b.innerText.toLowerCase() === cat) b.classList.add("active");
     });
-    if(cat === "all") renderProducts(allProducts);
+    if (cat === 'all') renderProducts(allProducts);
     else renderProducts(allProducts.filter(p => p.category === cat));
 }
 
 fetchData();
 </script>
-</body>
-</html>
