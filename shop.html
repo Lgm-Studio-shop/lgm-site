@@ -1,15 +1,84 @@
 <!DOCTYPE html>
-<html>
+<html lang="uk">
 <head>
-    <style>
-        body { background: black; color: white; text-align: center; font-family: sans-serif; padding-top: 50px; }
-        .back { color: gray; text-decoration: none; border: 1px solid gray; padding: 10px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LGM — la gentillesse méritée</title>
+
+<style>
+body{
+margin:0;
+font-family:Helvetica,Arial,sans-serif;
+background:black;
+color:white;
+}
+
+/* HEADER */
+header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:22px 30px;
+position:absolute;
+width:100%;
+z-index:5;
+}
+
+.logo{
+font-size:22px;
+letter-spacing:3px;
+font-weight:700;
+}
+
+/* HERO */
+.hero{
+height:100vh;
+background:url('https://images.unsplash.com/photo-1520975922324-8c5d8b0a1f7c?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+text-align:center;
+}
+
+.hero h1{
+font-size:40px;
+letter-spacing:6px;
+margin:0 0 20px;
+}
+
+.shop-btn{
+padding:14px 32px;
+border:1px solid white;
+background:transparent;
+color:white;
+font-size:14px;
+letter-spacing:2px;
+cursor:pointer;
+transition:.3s;
+}
+
+.shop-btn:hover{
+background:white;
+color:black;
+}
+</style>
 </head>
+
 <body>
-    <h1>LGM CATALOG</h1>
-    <p>Тут будуть твої джинси.</p>
-    <img src="lgm-jeans-01.png" width="300"><br><br>
-    <a href="index.html" class="back">Назад</a>
+
+<header>
+<div class="logo">LGM</div>
+</header>
+
+<section class="hero">
+<h1>NEW COLLECTION</h1>
+
+<button class="shop-btn" onclick="location.href='shop.html'">
+SHOP NOW
+</button>
+
+</section>
+
 </body>
 </html>
